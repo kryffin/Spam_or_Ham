@@ -36,8 +36,8 @@ def main (argv):
 	print("P(Y = HAM) =", P_Y_ham)
 
 	print("Apprentissage...")
-	b_spam = apprentissageSPAM(dictionnaire, nbSPAMapp)
-	b_ham = apprentissageHAM(dictionnaire, nbHAMapp)
+	b_spam = apprentissage(dictionnaire, nbSPAMapp, DOSSIER_SPAM)
+	b_ham = apprentissage(dictionnaire, nbHAMapp, DOSSIER_HAM)
 
 	print("Test :")
 
@@ -45,10 +45,18 @@ def main (argv):
 	for i in range(nbSPAMtest):
 		probaSPAM = probaPosteriori(baseTests + "/spam/" + str(i) + ".txt", b_spam, P_Y_spam, dictionnaire)
 		probaHAM = probaPosteriori(baseTests + "/spam/" + str(i) + ".txt", b_ham, P_Y_ham, dictionnaire)
-		if probaSPAM > probaHAM:
-			print("SPAM numéro", i, "identifié comme un SPAM")
+		P_X = math.exp(probaSPAM) + math.exp(probaHAM)
+		if (P_X == 0.):
+			probaSPAM = 0.
+			probaHAM = 0.
 		else:
-			print("SPAM numéro", i, "identifié comme un HAM ***erreur***")
+			probaSPAM = 1 / P_X * probaSPAM
+			probaHAM = 1 / P_X * probaHAM
+		print("SPAM numéro", i, " : P(Y = SPAM | X = x) =", probaSPAM, ", P(Y = HAM | X = x) =", probaHAM)
+		if probaSPAM > probaHAM:
+			print("\t=> identifié comme un SPAM")
+		else:
+			print("\t=> identifié comme un HAM ***erreur***")
 			err_spam = err_spam + 1.
 	err_spam = err_spam / nbSPAMtest
 
@@ -56,14 +64,22 @@ def main (argv):
 	for i in range(nbHAMtest):
 		probaSPAM = probaPosteriori(baseTests + "/ham/" + str(i) + ".txt", b_spam, P_Y_spam, dictionnaire)
 		probaHAM = probaPosteriori(baseTests + "/ham/" + str(i) + ".txt", b_ham, P_Y_ham, dictionnaire)
+		P_X = math.exp(probaSPAM) + math.exp(probaHAM)
+		if (P_X == 0.):
+			probaSPAM = 0.
+			probaHAM = 0.
+		else:
+			probaSPAM = 1 / P_X * probaSPAM
+			probaHAM = 1 / P_X * probaHAM
+		print("HAM numéro", i, " : P(Y = SPAM | X = x) =", probaSPAM, ", P(Y = HAM | X = x) =", probaHAM)
 		if probaSPAM > probaHAM:
-			print("HAM numéro", i, "identifié comme un SPAM ***erreur***")
+			print("\t=> identifié comme un SPAM ***erreur***")
 			err_ham = err_ham + 1.
 		else:
-			print("HAM numéro", i, "identifié comme un HAM")
+			print("\t=> identifié comme un HAM")
 	err_ham = err_ham / nbHAMtest
 
-	print("Erreur de test sur les", nbSPAMtest, "SPAM\t\t:", err_spam*100, "%")
+	print("\nErreur de test sur les", nbSPAMtest, "SPAM\t\t:", err_spam*100, "%")
 	print("Erreur de test sur les", nbHAMtest, "HAM\t\t:", err_ham*100, "%")
 	print("Erreur de test global sur", (nbSPAMtest + nbHAMtest), "mails\t:", ((err_spam + err_ham) / 2)*100, "%")
 
@@ -97,32 +113,18 @@ def lire_message (dictionnaire, fichier):
 	return mots
 
 # apprentissage sur les fichiers SPAM
-def apprentissageSPAM (dictionnaire, nbApp):
-	b_spam = [0.]*len(dictionnaire)
+def apprentissage (dictionnaire, nbApp, dossier):
+	b = [0.]*len(dictionnaire)
 	for i in range(nbApp):
-		occurences = lire_message(dictionnaire, DOSSIER_SPAM + str(i) + ".txt")
+		occurences = lire_message(dictionnaire, dossier + str(i) + ".txt")
 		for j in range(len(dictionnaire)):
 			if occurences[j]:
-				b_spam[j] += 1.
+				b[j] += 1.
 
 	for i in range(len(dictionnaire)):
-		b_spam[i] = (b_spam[i] + EPS) / (nbApp + (2*EPS))
+		b[i] = (b[i] + EPS) / (nbApp + (2*EPS))
 		
-	return b_spam
-
-# apprentissage sur les fichiers SPAM
-def apprentissageHAM (dictionnaire, nbApp):
-	b_ham = [0.]*len(dictionnaire)
-	for i in range(nbApp):
-		occurences = lire_message(dictionnaire, DOSSIER_HAM + str(i) + ".txt")
-		for j in range(len(dictionnaire)):
-			if occurences[j]:
-				b_ham[j] += 1.
-
-	for i in range(len(dictionnaire)):
-		b_ham[i] = (b_ham[i] + EPS) / (nbApp + (2*EPS))
-
-	return b_ham
+	return b
 
 # calcul de la probabilité à posteriori
 def probaPosteriori (fichier, b, P, dictionnaire):
