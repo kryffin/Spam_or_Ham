@@ -1,6 +1,7 @@
 import sys
 import re
 import math
+import numpy as np
 
 DOSSIER_SPAM = "baseapp/spam/"
 DOSSIER_HAM = "baseapp/ham/"
@@ -50,8 +51,8 @@ def main (argv):
 			probaSPAM = 0.
 			probaHAM = 0.
 		else:
-			probaSPAM = 1 / P_X * probaSPAM
-			probaHAM = 1 / P_X * probaHAM
+			probaSPAM = np.float64(1. / P_X * math.exp(probaSPAM))
+			probaHAM = np.float64(1 / P_X * math.exp(probaHAM))
 		print("SPAM numéro", i, " : P(Y = SPAM | X = x) =", probaSPAM, ", P(Y = HAM | X = x) =", probaHAM)
 		if probaSPAM > probaHAM:
 			print("\t=> identifié comme un SPAM")
@@ -69,8 +70,8 @@ def main (argv):
 			probaSPAM = 0.
 			probaHAM = 0.
 		else:
-			probaSPAM = 1 / P_X * probaSPAM
-			probaHAM = 1 / P_X * probaHAM
+			probaSPAM = np.float64(1. / P_X * math.exp(probaSPAM))
+			probaHAM = np.float64(1. / P_X * math.exp(probaHAM))
 		print("HAM numéro", i, " : P(Y = SPAM | X = x) =", probaSPAM, ", P(Y = HAM | X = x) =", probaHAM)
 		if probaSPAM > probaHAM:
 			print("\t=> identifié comme un SPAM ***erreur***")
