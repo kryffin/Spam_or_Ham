@@ -34,7 +34,7 @@ def main (argv):
 	b_ham = apprentissage(dictionnaire, nbHAMapp, baseApps + "/ham/")
 
 	#enregistrement du classifieur
-	sauvegardeClassifieur(fichierClassifieur, P_Y_spam, P_Y_ham, b_spam, b_ham)
+	sauvegardeClassifieur(fichierClassifieur, P_Y_spam, P_Y_ham, nbSPAMapp, nbHAMapp, EPS, b_spam, b_ham)
 
 # charge le dictionnaire situé dans DICTIONNAIRE dans une liste de mots
 def charger_dictionnaire ():
@@ -73,18 +73,19 @@ def apprentissage (dictionnaire, nbApp, dossier):
 		for j in range(len(dictionnaire)):
 			if occurences[j]:
 				b[j] += 1.
-
-	for i in range(len(dictionnaire)):
-		b[i] = (b[i] + EPS) / (nbApp + (2*EPS))
 		
 	return b
 
 #Sauvegarde du classifieur généré grâce à l'apprentissage
-#les 2 premières lignes contiennent des probas, en suite 2 lignes pour les tailles des tableaux b puis ces tableaux ligne par ligne
-def sauvegardeClassifieur (fichierClassifieur, P_Y_spam, P_Y_ham, b_spam, b_ham):
+#les 2 premières lignes contiennent des probas, puis 2 lignes pour le nombre d'échantillons d'apprentissage
+#1 ligne pour stocker l'epsilon, ensuite 2 lignes pour les tailles des tableaux b puis ces tableaux ligne par ligne
+def sauvegardeClassifieur (fichierClassifieur, P_Y_spam, P_Y_ham, nbSPAMapp, nbHAMapp, eps, b_spam, b_ham):
 	fichier = open(fichierClassifieur + ".cla", "w")
 	fichier.write(str(P_Y_spam) + "\n")
 	fichier.write(str(P_Y_ham) + "\n")
+	fichier.write(str(nbSPAMapp) + "\n")
+	fichier.write(str(nbHAMapp) + "\n")
+	fichier.write(str(eps) + "\n")
 	fichier.write(str(len(b_spam)) + "\n")
 	fichier.write(str(len(b_ham)) + "\n")
 	for b in range(len(b_spam)):

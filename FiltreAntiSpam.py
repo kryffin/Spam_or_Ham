@@ -6,7 +6,6 @@ import numpy as np
 DOSSIER_SPAM = "baseapp/spam/"
 DOSSIER_HAM = "baseapp/ham/"
 DICTIONNAIRE = "dictionnaire1000en.txt"
-EPS = 1.	#epsilon utilisé pour régler l'apprentissage
 
 def main (argv):
 	if len(sys.argv) != 3:
@@ -58,18 +57,28 @@ def charger_dictionnaire ():
 
 	return dictionnaire
 
+#lisse les données brutes du classifieur
+def lissage (b, nbApp, eps):
+	b_lisse = [0.]*len(b)
+	for i in range(len(b)):
+		b_lisse[i] = (float(b[i]) + eps) / (nbApp + (2*eps))
+	return b_lisse
+
 #Chargement du classifieur passé en argument du programme
-#returne une liste de la forme : [P(Y = SPAM), P(Y = HAM), b_spam[], b_ham[]]
+#returne une liste de la forme : [P(Y = SPAM), P(Y = HAM), nbSPAMapp, nbHAMapp, epsilon, b_spam[], b_ham[]]
 def chargementClassifieur (fichierClassifieur):
 	classifieur = []
 	fichier = open(fichierClassifieur, "r")
 	contenu = fichier.read().split()
 	classifieur.append(float(contenu[0])) #P_Y_spam
 	classifieur.append(float(contenu[1])) #P_Y_ham
-	tailleBSpam = int(contenu[2]) #len(b_spam)
-	tailleBHam = int(contenu[3]) #len(b_spam)
-	classifieur.append(contenu[4:tailleBSpam+4]) #b_spam
-	classifieur.append(contenu[tailleBSpam+4:tailleBSpam+tailleBHam+4]) #b_ham
+	nbSPAMapp = int(contenu[2]) #nbSPAMapp
+	nbHAMapp = int(contenu[3]) #nbHAMapp
+	epsilon = float(contenu[4]) #epsilon
+	tailleBSpam = int(contenu[5]) #len(b_spam)
+	tailleBHam = int(contenu[6]) #len(b_spam)
+	classifieur.append(lissage(contenu[7:tailleBSpam+7], nbSPAMapp, epsilon)) #b_spam
+	classifieur.append(lissage(contenu[tailleBSpam+7:tailleBSpam+tailleBHam+7], nbHAMapp, epsilon)) #b_ham
 	return classifieur
 
 # lit un message spécifié par fichier, renvoie une liste ordonnée dans
