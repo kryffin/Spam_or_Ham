@@ -3,20 +3,19 @@ import re
 import math
 import numpy as np
 
-DOSSIER_SPAM = "baseapp/spam/"
-DOSSIER_HAM = "baseapp/ham/"
 DICTIONNAIRE = "dictionnaire1000en.txt"
-EPS = 1.	#epsilon utilisé pour régler l'apprentissage
 
 def main (argv):
-	if len(sys.argv) != 3:
-		print("Utilisation du programme : FiltreAntiSpam.py mon_classifieur.cla message.txt")
+	if len(sys.argv) != 5:
+		print("Utilisation du programme : TestClassifieur.py mon_classifieur.cla dossier_base_test nb_spam nb_ham")
 		return
 
 	#récupération des arguments
 	fichierClassifieur = sys.argv[1]
-	fichierMessage = sys.argv[2]
-	print("Test du message", fichierMessage, "avec le classifieur", fichierClassifieur)
+	baseTests = sys.argv[2]
+	nbSPAMtest = int(sys.argv[3])
+	nbHAMtest = int(sys.argv[4])
+	print("Test du classifieur", fichierClassifieur, "avec le dossier de test :", baseTests, "sur", nbSPAMtest, "SPAM et", nbHAMtest, "HAM")
 
 	print("Chargement du dictionnaire...")
 	dictionnaire = charger_dictionnaire()
@@ -31,20 +30,52 @@ def main (argv):
 	b_spam = [float(b) for b in classifieur[2]]
 	b_ham = [float(b) for b in classifieur[3]]
 
-	#test du message
-	probaSPAM = probaPosteriori(fichierMessage, b_spam, P_Y_spam, dictionnaire)
-	probaHAM = probaPosteriori(fichierMessage, b_ham, P_Y_ham, dictionnaire)
-	P_X = math.exp(probaSPAM) + math.exp(probaHAM)
-	if (P_X == 0.):
-		probaSPAM = 0.
-		probaHAM = 0.
-	else:
-		probaSPAM = np.float64(1. / P_X * math.exp(probaSPAM))
-		probaHAM = np.float64(1 / P_X * math.exp(probaHAM))
-	if probaSPAM > probaHAM:
-		print("D'après", fichierClassifieur, ", le message", fichierMessage, "est un SPAM !")
-	else:
-		print("D'après", fichierClassifieur, ", le message", fichierMessage, "est un HAM !")
+	print("P(Y = SPAM) =", P_Y_spam)
+	print("P(Y = HAM) =", P_Y_ham)
+
+	print("Test :")
+
+	err_spam = 0.
+	for i in range(nbSPAMtest):
+		probaSPAM = probaPosteriori(baseTests + "/spam/" + str(i) + ".txt", b_spam, P_Y_spam, dictionnaire)
+		probaHAM = probaPosteriori(baseTests + "/spam/" + str(i) + ".txt", b_ham, P_Y_ham, dictionnaire)
+		P_X = math.exp(probaSPAM) + math.exp(probaHAM)
+		if (P_X == 0.):
+			probaSPAM = 0.
+			probaHAM = 0.
+		else:
+			probaSPAM = np.float64(1. / P_X * math.exp(probaSPAM))
+			probaHAM = np.float64(1 / P_X * math.exp(probaHAM))
+		print("\nSPAM numéro", i, " : P(Y = SPAM | X = x) =", probaSPAM, ", P(Y = HAM | X = x) =", probaHAM)
+		if probaSPAM > probaHAM:
+			print("\t=> identifié comme un SPAM")
+		else:
+			print("\t=> identifié comme un HAM ***erreur***")
+			err_spam = err_spam + 1.
+	err_spam = err_spam / nbSPAMtest
+
+	err_ham = 0.
+	for i in range(nbHAMtest):
+		probaSPAM = probaPosteriori(baseTests + "/ham/" + str(i) + ".txt", b_spam, P_Y_spam, dictionnaire)
+		probaHAM = probaPosteriori(baseTests + "/ham/" + str(i) + ".txt", b_ham, P_Y_ham, dictionnaire)
+		P_X = math.exp(probaSPAM) + math.exp(probaHAM)
+		if (P_X == 0.):
+			probaSPAM = 0.
+			probaHAM = 0.
+		else:
+			probaSPAM = np.float64(1. / P_X * math.exp(probaSPAM))
+			probaHAM = np.float64(1. / P_X * math.exp(probaHAM))
+		print("\nHAM numéro", i, " : P(Y = SPAM | X = x) =", probaSPAM, ", P(Y = HAM | X = x) =", probaHAM)
+		if probaSPAM > probaHAM:
+			print("\t=> identifié comme un SPAM ***erreur***")
+			err_ham = err_ham + 1.
+		else:
+			print("\t=> identifié comme un HAM")
+	err_ham = err_ham / nbHAMtest
+
+	print("\nErreur de test sur les", nbSPAMtest, "SPAM\t\t:", err_spam*100, "%")
+	print("Erreur de test sur les", nbHAMtest, "HAM\t\t:", err_ham*100, "%")
+	print("Erreur de test global sur", (nbSPAMtest + nbHAMtest), "mails\t:", ((err_spam + err_ham) / 2)*100, "%")
 
 # charge le dictionnaire situé dans DICTIONNAIRE dans une liste de mots
 def charger_dictionnaire ():
