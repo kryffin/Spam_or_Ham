@@ -1,10 +1,7 @@
 import sys
 import re
 import math
-import numpy as np
 
-DOSSIER_SPAM = "baseapp/spam/"
-DOSSIER_HAM = "baseapp/ham/"
 DICTIONNAIRE = "dictionnaire1000en.txt"
 
 def main (argv):
@@ -15,12 +12,9 @@ def main (argv):
 	#récupération des arguments
 	fichierClassifieur = sys.argv[1]
 	fichierMessage = sys.argv[2]
-	print("Test du message", fichierMessage, "avec le classifieur", fichierClassifieur)
 
-	print("Chargement du dictionnaire...")
 	dictionnaire = charger_dictionnaire()
 
-	print("Chargement du classifieur...")
 	classifieur = chargementClassifieur(fichierClassifieur)
 
 	P_Y_spam = classifieur[0]
@@ -30,6 +24,8 @@ def main (argv):
 	b_spam = [float(b) for b in classifieur[2]]
 	b_ham = [float(b) for b in classifieur[3]]
 
+	print("Test du message " + fichierMessage + "...")
+
 	#test du message
 	probaSPAM = probaPosteriori(fichierMessage, b_spam, P_Y_spam, dictionnaire)
 	probaHAM = probaPosteriori(fichierMessage, b_ham, P_Y_ham, dictionnaire)
@@ -38,12 +34,13 @@ def main (argv):
 		probaSPAM = 0.
 		probaHAM = 0.
 	else:
-		probaSPAM = np.float64(1. / P_X * math.exp(probaSPAM))
-		probaHAM = np.float64(1 / P_X * math.exp(probaHAM))
+		probaSPAM = 1. / P_X * math.exp(probaSPAM)
+		probaHAM = 1 / P_X * math.exp(probaHAM)
+	print(fichierMessage + " : P(Y = SPAM | X = x) =", probaSPAM, ", P(Y = HAM | X = x) =", probaHAM)
 	if probaSPAM > probaHAM:
-		print("D'après", fichierClassifieur, ", le message", fichierMessage, "est un SPAM !")
+		print("D'après " + fichierClassifieur + ", le message " + fichierMessage + " est un SPAM !")
 	else:
-		print("D'après", fichierClassifieur, ", le message", fichierMessage, "est un HAM !")
+		print("D'après " + fichierClassifieur + ", le message " + fichierMessage + " est un HAM !")
 
 # charge le dictionnaire situé dans DICTIONNAIRE dans une liste de mots
 def charger_dictionnaire ():

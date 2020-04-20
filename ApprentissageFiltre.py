@@ -1,10 +1,7 @@
 import sys
 import re
 import math
-import numpy as np
 
-DOSSIER_SPAM = "baseapp/spam/"
-DOSSIER_HAM = "baseapp/ham/"
 DICTIONNAIRE = "dictionnaire1000en.txt"
 EPS = 1.	#epsilon utilisé pour régler l'apprentissage
 
@@ -18,23 +15,20 @@ def main (argv):
 	baseApps = sys.argv[2]
 	nbSPAMapp = int(sys.argv[3])
 	nbHAMapp = int(sys.argv[4])
-	print("Apprentissage du classifieur", fichierClassifieur, "avec le dossier d'apprentissage :", baseApps, "sur", nbSPAMapp, "SPAM et", nbHAMapp, "HAM")
 
-	print("Chargement du dictionnaire...")
 	dictionnaire = charger_dictionnaire()
 
 	P_Y_spam = nbSPAMapp / (nbSPAMapp + nbHAMapp)
 	P_Y_ham = nbHAMapp / (nbSPAMapp + nbHAMapp)
 
-	print("P(Y = SPAM) =", P_Y_spam)
-	print("P(Y = HAM) =", P_Y_ham)
-
-	print("Apprentissage...")
+	print("Apprentissage sur " + str(nbSPAMapp) + " SPAM et " + str(nbHAMapp) + " HAM...")
 	b_spam = apprentissage(dictionnaire, nbSPAMapp, baseApps + "/spam/")
 	b_ham = apprentissage(dictionnaire, nbHAMapp, baseApps + "/ham/")
 
 	#enregistrement du classifieur
 	sauvegardeClassifieur(fichierClassifieur, P_Y_spam, P_Y_ham, nbSPAMapp, nbHAMapp, EPS, b_spam, b_ham)
+
+	print("Classifieur enregistré dans \'" + fichierClassifieur + ".cla\'.")
 
 # charge le dictionnaire situé dans DICTIONNAIRE dans une liste de mots
 def charger_dictionnaire ():

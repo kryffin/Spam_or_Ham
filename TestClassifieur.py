@@ -1,7 +1,6 @@
 import sys
 import re
 import math
-import numpy as np
 
 DICTIONNAIRE = "dictionnaire1000en.txt"
 
@@ -15,12 +14,9 @@ def main (argv):
 	baseTests = sys.argv[2]
 	nbSPAMtest = int(sys.argv[3])
 	nbHAMtest = int(sys.argv[4])
-	print("Test du classifieur", fichierClassifieur, "avec le dossier de test :", baseTests, "sur", nbSPAMtest, "SPAM et", nbHAMtest, "HAM")
 
-	print("Chargement du dictionnaire...")
 	dictionnaire = charger_dictionnaire()
 
-	print("Chargement du classifieur...")
 	classifieur = chargementClassifieur(fichierClassifieur)
 
 	P_Y_spam = classifieur[0]
@@ -30,10 +26,7 @@ def main (argv):
 	b_spam = [float(b) for b in classifieur[2]]
 	b_ham = [float(b) for b in classifieur[3]]
 
-	print("P(Y = SPAM) =", P_Y_spam)
-	print("P(Y = HAM) =", P_Y_ham)
-
-	print("Test :")
+	print("Test du classifieur sur " + str(nbSPAMtest) + " SPAM et " + str(nbHAMtest) + " HAM...")
 
 	err_spam = 0.
 	for i in range(nbSPAMtest):
@@ -44,8 +37,8 @@ def main (argv):
 			probaSPAM = 0.
 			probaHAM = 0.
 		else:
-			probaSPAM = np.float64(1. / P_X * math.exp(probaSPAM))
-			probaHAM = np.float64(1 / P_X * math.exp(probaHAM))
+			probaSPAM = 1. / P_X * math.exp(probaSPAM)
+			probaHAM = 1 / P_X * math.exp(probaHAM)
 		print("\nSPAM numéro", i, " : P(Y = SPAM | X = x) =", probaSPAM, ", P(Y = HAM | X = x) =", probaHAM)
 		if probaSPAM > probaHAM:
 			print("\t=> identifié comme un SPAM")
@@ -63,8 +56,8 @@ def main (argv):
 			probaSPAM = 0.
 			probaHAM = 0.
 		else:
-			probaSPAM = np.float64(1. / P_X * math.exp(probaSPAM))
-			probaHAM = np.float64(1. / P_X * math.exp(probaHAM))
+			probaSPAM = 1. / P_X * math.exp(probaSPAM)
+			probaHAM = 1. / P_X * math.exp(probaHAM)
 		print("\nHAM numéro", i, " : P(Y = SPAM | X = x) =", probaSPAM, ", P(Y = HAM | X = x) =", probaHAM)
 		if probaSPAM > probaHAM:
 			print("\t=> identifié comme un SPAM ***erreur***")

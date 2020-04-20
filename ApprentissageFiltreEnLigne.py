@@ -1,15 +1,12 @@
 import sys
 import re
 import math
-import numpy as np
 
-DOSSIER_SPAM = "baseapp/spam/"
-DOSSIER_HAM = "baseapp/ham/"
 DICTIONNAIRE = "dictionnaire1000en.txt"
 
 def main (argv):
 	if len(sys.argv) != 4:
-		print("Utilisation du programme : ApprentissageFiltreEnLigne.py mon_classifieur message.txt SPAM|HAM")
+		print("Utilisation du programme : ApprentissageFiltreEnLigne.py mon_classifieur.cla message.txt SPAM|HAM")
 		return
 
 	#récupération des arguments
@@ -23,12 +20,8 @@ def main (argv):
 		print(sys.argv[3], "n'est pas un argument valide, veuillez choisir \'SPAM\' ou \'HAM\'")
 		return
 
-	print("Apprentissage en ligne du classifieur", fichierClassifieur, "avec le message", fichierMessage)
-
-	print("Chargement du dictionnaire...")
 	dictionnaire = charger_dictionnaire()
 
-	print("Chargement du classifieur...")
 	classifieur = chargementClassifieurBrut(fichierClassifieur)
 
 	P_Y_spam = classifieur[0]
@@ -43,17 +36,19 @@ def main (argv):
 	b_spam = [float(b) for b in classifieur[5]]
 	b_ham = [float(b) for b in classifieur[6]]
 
-	print("Modification du classifieur", fichierClassifieur, "par apprentissage sur le HAM", fichierMessage, "...")
-
 	if isSPAM:
+		print("Modification du filtre \'" + fichierClassifieur + "\' par apprentissage sur le SPAM \'" + fichierMessage + "\'...")
 		b_spam = apprentissageFichier(b_spam, dictionnaire, fichierMessage)
 		nbSPAMapp = nbSPAMapp + 1
 	else:
+		print("Modification du filtre \'" + fichierClassifieur + "\' par apprentissage sur le HAM \'" + fichierMessage + "\'...")
 		b_ham = apprentissageFichier(b_ham, dictionnaire, fichierMessage)
 		nbHAMapp = nbHAMapp + 1
 
 	#enregistrement du classifieur
 	sauvegardeClassifieur(fichierClassifieur, P_Y_spam, P_Y_ham, nbSPAMapp, nbHAMapp, epsilon, b_spam, b_ham)
+
+	print("Classifieur \'" + fichierClassifieur + "\' mis à jour.")
 
 # charge le dictionnaire situé dans DICTIONNAIRE dans une liste de mots
 def charger_dictionnaire ():
